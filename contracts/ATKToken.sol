@@ -55,9 +55,9 @@ contract ATKToken is StandardToken {
         uint256 atkVal = balances[msg.sender];
         if (atkVal == 0) throw;
 
-        uint256 ethVal = atkVal.div(price);     
-        if (!msg.sender.send(ethVal)) throw;   
         balances[msg.sender] = 0;
         totalSupply = totalSupply.sub(atkVal); 
+        uint256 ethVal = atkVal.div(price);     
+        if (!msg.sender.send(ethVal)) throw;   
     }
 }
