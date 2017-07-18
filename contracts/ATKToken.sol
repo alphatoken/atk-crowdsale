@@ -2,35 +2,34 @@ contract ATKToken is StandardToken {
     string public constant name = "AlphaToken";
     string public constant symbol = "ATK";
     uint256 public constant decimals = 18;
-    uint256 public constant price = 6000;
-    uint256 public constant atkFund = 500 * (10**6) * 10**decimals;   
-    uint256 public constant tokenCreationCap = 1500 * (10**6) * 10**decimals;   
-    uint256 public constant tokenCreationMin = 675 * (10**6) * 10**decimals;   
 
-    address public ethFundDeposit;
-    address public atkFundDeposit;
-    uint256 public fundingStartBlock;
-    uint256 public fundingEndBlock;
+    uint256 public constant preICOFund = 800 * (10**6) * 10**decimals;   
+    uint256 public constant teamFund = 2400 * (10**6) * 10**decimals;   
+    uint256 public constant optionPoolFund = 1600 * (10**6) * 10**decimals;   
+    uint256 public constant globalCharityFund = 1600 * (10**6) * 10**decimals;   
+    uint256 public constant tokenCreationCap = 2320 * (10**6) * 10**decimals;   
+
+    uint256 public startTime;
     bool public isFinalized;
+    address public reserveFundDeposit;
+    address public ethFundDeposit;
 
     event CreateATK(address indexed _to, uint256 _value);
 
-    function ATKToken(address _ethFundDeposit, address _atkFundDeposit, uint256 _fundingStartBlock, uint256 _fundingEndBlock) {
+    function ATKToken(address _ethFundDeposit, address _reserveFundDeposit) {
         isFinalized = false;
+        startTime = now;
         ethFundDeposit = _ethFundDeposit;
-        atkFundDeposit = _atkFundDeposit;
-        fundingStartBlock = _fundingStartBlock;
-        fundingEndBlock = _fundingEndBlock;
-        balances[atkFundDeposit] = atkFund;
-        totalSupply = atkFund;
-        CreateATK(atkFundDeposit, atkFund);
+        reserveFundDeposit = _reserveFundDeposit;
     }
 
-    function () payable external {
+    function createTokens() payable external {
         if (msg.value == 0) throw;
-        if (block.number < fundingStartBlock || block.number > fundingEndBlock) throw;
 
-        uint256 tokens = msg.value.mul(price);
+        uint256 passedWeeks = getPassedWeeks();
+        if (passedWeeks > 4) throw;
+
+        uint256 tokens = msg.value.mul(getExchangeRate(passedWeeks));
         uint256 newTotalSupply = totalSupply.add(tokens);
         if (tokenCreationCap < newTotalSupply) throw;
         totalSupply = newTotalSupply;
@@ -41,23 +40,35 @@ contract ATKToken is StandardToken {
     function finalize() external {
         if (isFinalized) throw;
         if (msg.sender != ethFundDeposit) throw; 
-        if (totalSupply < tokenCreationMin) throw;      
-        if (block.number <= fundingEndBlock) throw;
+        if (getPassedWeeks() < 4) throw;
         if (!ethFundDeposit.send(this.balance)) throw;  
         isFinalized = true;
+        createReservedTokens();
     }
 
-    function refund() external {
-        if (isFinalized) throw;                     
-        if (block.number <= fundingEndBlock) throw; 
-        if (totalSupply >= tokenCreationMin) throw;
-        if (msg.sender == atkFundDeposit) throw;
-        uint256 atkVal = balances[msg.sender];
-        if (atkVal == 0) throw;
+    function getExchangeRate(uint256 passedWeeks) internal returns (uint256) {
+        if (passedWeeks < 1) {
+            return 4000; 
+        } 
 
-        balances[msg.sender] = 0;
-        totalSupply = totalSupply.sub(atkVal); 
-        uint256 ethVal = atkVal.div(price);     
-        if (!msg.sender.send(ethVal)) throw;   
+        if (passedWeeks < 2) {
+            return 3000; 
+        }
+
+        if (passedWeeks < 3) {
+            return 2000; 
+        }
+
+        return  1000;
+    }
+
+    function getPassedWeeks() internal returns (uint256) {
+        return (now - startTime) / 1 weeks;
+    }
+
+    function createReservedTokens() internal {
+        uint256 reservedToken = (tokenCreationCap - totalSupply) + teamFund + optionPoolFund + globalCharityFund + preICOFund;
+        balances[reserveFundDeposit] = reservedToken;
+        CreateATK(reserveFundDeposit, reservedToken);
     }
 }
