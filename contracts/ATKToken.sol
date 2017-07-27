@@ -3,10 +3,7 @@ contract ATKToken is StandardToken {
     string public constant symbol = "ATK";
     uint256 public constant decimals = 18;
 
-    uint256 public constant preICOFund = 800 * (10**6) * 10**decimals;   
-    uint256 public constant teamFund = 2400 * (10**6) * 10**decimals;   
-    uint256 public constant optionPoolFund = 1600 * (10**6) * 10**decimals;   
-    uint256 public constant globalCharityFund = 1600 * (10**6) * 10**decimals;   
+    uint256 public constant reserverdFund = 6400 * (10**6) * 10**decimals;   
     uint256 public constant tokenCreationCap = 2320 * (10**6) * 10**decimals;   
 
     uint256 public startTime;
@@ -46,7 +43,7 @@ contract ATKToken is StandardToken {
         createReservedTokens();
     }
 
-    function getExchangeRate(uint256 passedWeeks) internal returns (uint256) {
+    function getExchangeRate(uint256 passedWeeks) internal constant returns (uint256) {
         if (passedWeeks < 1) {
             return 4000; 
         } 
@@ -62,12 +59,12 @@ contract ATKToken is StandardToken {
         return  1000;
     }
 
-    function getPassedWeeks() internal returns (uint256) {
+    function getPassedWeeks() internal constant returns (uint256) {
         return (now - startTime) / 1 weeks;
     }
 
     function createReservedTokens() internal {
-        uint256 reservedToken = (tokenCreationCap - totalSupply) + teamFund + optionPoolFund + globalCharityFund + preICOFund;
+        uint256 reservedToken = (tokenCreationCap - totalSupply) + reserverdFund;
         balances[reserveFundDeposit] = reservedToken;
         CreateATK(reserveFundDeposit, reservedToken);
     }
