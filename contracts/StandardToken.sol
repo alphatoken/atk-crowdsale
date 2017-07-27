@@ -11,7 +11,7 @@ contract StandardToken is BasicToken, ERC20 {
 
 
     function approve(address _spender, uint256 _value) {
-        if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) throw;
+        if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) revert();
 
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);

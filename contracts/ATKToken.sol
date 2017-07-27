@@ -24,24 +24,24 @@ contract ATKToken is StandardToken {
     }
 
     function createTokens() payable external {
-        if (msg.value == 0) throw;
+        if (msg.value == 0) revert();
 
         uint256 passedWeeks = getPassedWeeks();
-        if (passedWeeks > 4) throw;
+        if (passedWeeks > 4) revert();
 
         uint256 tokens = msg.value.mul(getExchangeRate(passedWeeks));
         uint256 newTotalSupply = totalSupply.add(tokens);
-        if (tokenCreationCap < newTotalSupply) throw;
+        if (tokenCreationCap < newTotalSupply) revert();
         totalSupply = newTotalSupply;
         balances[msg.sender] = balances[msg.sender].add(tokens);
         CreateATK(msg.sender, tokens);
     }
 
     function finalize() external {
-        if (isFinalized) throw;
-        if (msg.sender != ethFundDeposit) throw; 
-        if (getPassedWeeks() < 4) throw;
-        if (!ethFundDeposit.send(this.balance)) throw;  
+        if (isFinalized) revert();
+        if (msg.sender != ethFundDeposit) revert(); 
+        if (getPassedWeeks() < 4) revert();
+        if (!ethFundDeposit.send(this.balance)) revert();  
         isFinalized = true;
         createReservedTokens();
     }
