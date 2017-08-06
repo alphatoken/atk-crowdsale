@@ -3,21 +3,21 @@ contract ATKToken is StandardToken {
     string public constant symbol = "ATK";
     uint256 public constant decimals = 18;
 
-    uint256 public constant reserverdFund = 6400 * (10**6) * 10**decimals;   
-    uint256 public constant tokenCreationCap = 2320 * (10**6) * 10**decimals;   
+    uint256 public constant TokenCreationCap = 8000 * (10**6) * 10**decimals;   
+    uint256 public constant ICOTokenCreationCap = 2320 * (10**6) * 10**decimals;   
 
     uint256 public startTime;
-    bool public isFinalized;
+    uint256 public icoCreatedToken;
     address public reserveFundDeposit;
     address public ethFundDeposit;
 
-    event CreateATK(address indexed _to, uint256 _value);
-
     function ATKToken(address _ethFundDeposit, address _reserveFundDeposit) {
-        isFinalized = false;
+        totalSupply = TokenCreationCap;
         startTime = now;
         ethFundDeposit = _ethFundDeposit;
         reserveFundDeposit = _reserveFundDeposit;
+        balances[reserveFundDeposit] = TokenCreationCap;
+        allowed[reserveFundDeposit][this] = ICOTokenCreationCap;
     }
 
     function createTokens() payable external {
@@ -27,20 +27,12 @@ contract ATKToken is StandardToken {
         if (passedWeeks > 4) revert();
 
         uint256 tokens = msg.value.mul(getExchangeRate(passedWeeks));
-        uint256 newTotalSupply = totalSupply.add(tokens);
-        if (tokenCreationCap < newTotalSupply) revert();
-        totalSupply = newTotalSupply;
-        balances[msg.sender] = balances[msg.sender].add(tokens);
-        CreateATK(msg.sender, tokens);
+        transferFrom(reserveFundDeposit, msg.sender, tokens);
     }
 
-    function finalize() external {
-        if (isFinalized) revert();
+    function collectEther() external {
         if (msg.sender != ethFundDeposit) revert(); 
-        if (getPassedWeeks() < 4) revert();
         if (!ethFundDeposit.send(this.balance)) revert();  
-        isFinalized = true;
-        createReservedTokens();
     }
 
     function getExchangeRate(uint256 passedWeeks) internal constant returns (uint256) {
@@ -61,11 +53,5 @@ contract ATKToken is StandardToken {
 
     function getPassedWeeks() internal constant returns (uint256) {
         return (now - startTime) / 1 weeks;
-    }
-
-    function createReservedTokens() internal {
-        uint256 reservedToken = (tokenCreationCap - totalSupply) + reserverdFund;
-        balances[reserveFundDeposit] = reservedToken;
-        CreateATK(reserveFundDeposit, reservedToken);
     }
 }
