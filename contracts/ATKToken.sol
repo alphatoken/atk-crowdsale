@@ -17,7 +17,6 @@ contract ATKToken is StandardToken {
         ethFundDeposit = _ethFundDeposit;
         reserveFundDeposit = _reserveFundDeposit;
         balances[reserveFundDeposit] = TokenCreationCap;
-        allowed[reserveFundDeposit][this] = ICOTokenCreationCap;
     }
 
     function createTokens() payable external {
@@ -27,7 +26,10 @@ contract ATKToken is StandardToken {
         if (passedWeeks > 4) revert();
 
         uint256 tokens = msg.value.mul(getExchangeRate(passedWeeks));
-        transferFrom(reserveFundDeposit, msg.sender, tokens);
+        if (TokenCreationCap.sub(balances[reserveFundDeposit]) >  ICOTokenCreationCap.add(tokens)) revert(); 
+
+        balances[reserveFundDeposit] = balances[reserveFundDeposit].sub(tokens);
+        balances[msg.sender] = balances[msg.sender].add(tokens);
     }
 
     function collectEther() external {
