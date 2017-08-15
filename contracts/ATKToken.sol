@@ -23,10 +23,10 @@ contract ATKToken is StandardToken {
         if (msg.value == 0) revert();
 
         uint256 passedWeeks = getPassedWeeks();
-        if (passedWeeks > 4) revert();
+        if (passedWeeks > 5) revert();
 
         uint256 tokens = msg.value.mul(getExchangeRate(passedWeeks));
-        if (TokenCreationCap.sub(balances[reserveFundDeposit]) >  ICOTokenCreationCap.add(tokens)) revert(); 
+        if (TokenCreationCap.sub(balances[reserveFundDeposit]) >  ICOTokenCreationCap.sub(tokens)) revert(); 
 
         balances[reserveFundDeposit] = balances[reserveFundDeposit].sub(tokens);
         balances[msg.sender] = balances[msg.sender].add(tokens);
