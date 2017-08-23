@@ -3,8 +3,8 @@ contract ATKToken is StandardToken {
     string public constant symbol = "ATK";
     uint256 public constant decimals = 18;
 
-    uint256 public constant TokenCreationCap = 8000 * (10**6) * 10**decimals;   
-    uint256 public constant ICOTokenCreationCap = 2320 * (10**6) * 10**decimals;   
+    uint256 public constant TokenCreationCap = 4000 * (10**6) * 10**decimals;   
+    uint256 public constant ICOTokenCreationCap = 1160 * (10**6) * 10**decimals;   
 
     uint256 public startTime;
     uint256 public icoCreatedToken;
@@ -39,18 +39,14 @@ contract ATKToken is StandardToken {
 
     function getExchangeRate(uint256 passedWeeks) internal constant returns (uint256) {
         if (passedWeeks < 1) {
-            return 4000; 
-        } 
+            return 10267; 
+        }   
 
         if (passedWeeks < 2) {
-            return 3000; 
-        }
+            return 8800; 
+        }   
 
-        if (passedWeeks < 3) {
-            return 2000; 
-        }
-
-        return  1000;
+        return  7700;
     }
 
     function getPassedWeeks() internal constant returns (uint256) {
